@@ -1,0 +1,32 @@
+ApiVersion: apps/v1
+Kind: Deployment  
+metadata:
+  name: backend-deployment
+spec:  #contains the desired state of the deployment
+  replicas: 2
+    selector:
+      matchLabels:
+        app: backend
+  template:  # specifies the pod template
+    metadata:
+      labels:
+        app: backend
+    spec:  #specifies the desired state of the pod
+      containers:
+      - name: backend
+        image: salehktk005/backend:1.0
+        ports:
+        - containerPort: 80
+        env:
+        - name: backend-config
+          valueFrom:
+            configMapKeyRef:
+              name: myapp-backend-configmap
+              key: key
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
