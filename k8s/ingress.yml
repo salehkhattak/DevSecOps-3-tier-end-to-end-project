@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: notesapp-ingress
+  namespace: notes-app
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+
+spec:
+  rules:
+  - host: saleh-notesapp.com
+    http:
+      paths:
+      # Backend API Route
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: myapp-backend-svc
+            port:
+              number: 5000
+
+      # Frontend Route
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: myapp
+            port:
+              number: 5173

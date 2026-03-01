@@ -1,21 +1,24 @@
-services:  # removed 'version' as suggested by warning
+services:
   mysql:
-    image: mysql:8
+    image: mysql:5.7
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: admin        # Matches your .env
-      MYSQL_DATABASE: notes_app          # Matches your .env
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: notes_app
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql  # Optional
+       #Temporarily comment out init.sql until you verify it's valid
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-padmin"]
       timeout: 10s
       retries: 5
+      interval: 10s
+      start_period: 30s
 
   backend:
     build:
@@ -30,7 +33,7 @@ services:  # removed 'version' as suggested by warning
       - ./backend:/app
       - /app/node_modules
     env_file:
-      - ./backend/.env  # Make sure path is correct
+      - ./backend/.env
     environment:
       - NODE_ENV=development
     networks:
@@ -41,7 +44,7 @@ services:  # removed 'version' as suggested by warning
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "5173:5173"
+      - "5173:80"
     volumes:
       - ./frontend:/app
       - /app/node_modules

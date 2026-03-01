@@ -1,32 +1,77 @@
-ApiVersion: apps/v1
-Kind: Deployment  
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: backend-deployment
-spec:  #contains the desired state of the deployment
-  replicas: 2
-    selector:
-      matchLabels:
-        app: backend
-  template:  # specifies the pod template
+  namespace: notes-app
+
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: backend
+
+  template:
     metadata:
       labels:
         app: backend
-    spec:  #specifies the desired state of the pod
+
+    spec:
       containers:
       - name: backend
-        image: salehktk005/backend:1.0
+        image: salehktk005/notes-app-backend:1.1
+
         ports:
-        - containerPort: 80
+        - containerPort: 5000
+
         env:
-        - name: backend-config
+        - name: DB_HOST
           valueFrom:
             configMapKeyRef:
-              name: myapp-backend-configmap
-              key: key
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+              name: backend-configmap
+              key: DB_HOST
+
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: backend-configmap
+              key: DB_NAME
+
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: backend-configmap
+              key: DB_USER
+
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: backend-configmap
+              key: NODE_ENV
+
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-configmap
+              key: PORT
+
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: JWT_SECRET
+
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: DB_PASSWORD
+
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+
+          limits:
+            memory: "128Mi"
+            cpu: "500m"

@@ -4,8 +4,8 @@ metadata:
   name: backend-configmap
   namespace: notes-app
 data:
-  DB_HOST: "mysql-service"
-  DB_NAME: "notes_app"
-  DB_USER: "root"
-  NODE_ENV: "production"
+  DB_HOST: mysql-service
+  DB_NAME: notes_app
+  DB_USER: root
+  NODE_ENV: production
   PORT: "5000"

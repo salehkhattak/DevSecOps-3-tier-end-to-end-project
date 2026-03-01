@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: frontend-configmap
-  namespace: notesapp
+  namespace: notes-app
 data:
   key: "http://backend-service:5173"
 

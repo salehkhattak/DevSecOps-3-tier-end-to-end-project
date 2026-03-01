@@ -1,5 +1,5 @@
 apiVersion: v1
-kind: persistentVolume
+kind: PersistentVolume
 metadata:
   name: my-pv
 spec:
@@ -7,7 +7,6 @@ spec:
     storage: 1Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
   hostPath:
-    path: /mnt/data
-  storageClassName: manual #changing it later for cloud deployments
+    path: /data/mysql

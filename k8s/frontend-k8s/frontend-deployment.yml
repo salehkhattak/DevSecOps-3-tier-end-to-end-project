@@ -1,32 +1,41 @@
-ApiVersion: apps/v1
-Kind: Deployment  
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: frontend-deployment
-spec:  #contains the desired state of the deployment
+  namespace: notes-app
+
+spec:
   replicas: 3
+
   selector:
     matchLabels:
       app: frontend
-  template:  # specifies the pod template
+
+  template:
     metadata:
       labels:
         app: frontend
-    spec:  #specifies the desired state of the pod
+
+    spec:
       containers:
       - name: frontend
-        image: salehktk005/frontend:1.0
+        image: salehktk005/notes-app-frontend:1.0
+
         ports:
         - containerPort: 80
+
         env:
         - name: frontend-configmap
           valueFrom:
             configMapKeyRef:
               name: frontend-configmap
               key: key
-      resources: #specifies the resource requirements for the container
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
