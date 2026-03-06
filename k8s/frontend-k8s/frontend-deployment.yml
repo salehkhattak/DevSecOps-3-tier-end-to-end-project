@@ -10,7 +10,11 @@ spec:
   selector:
     matchLabels:
       app: frontend
-
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 1
   template:
     metadata:
       labels:
