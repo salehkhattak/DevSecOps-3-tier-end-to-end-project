@@ -29,19 +29,19 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh """
-                    ${SCANNER_HOME}/bin/sonar-scanner \
-                    -Dsonar.projectKey=node-3tier-app \
-                    -Dsonar.projectName=node-3tier-app \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=http://sonarqube:9000
-                    """
-                }
-            }
+       stage('SonarQube Analysis') {
+         steps {
+            withSonarQubeEnv('SonarQube') {
+            sh """
+            ${SCANNER_HOME}/bin/sonar-scanner \
+            -Dsonar.projectKey=devsecops_project \
+            -Dsonar.projectName=devsecops_project \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=http://host.docker.internal:9000 \
+            """
         }
+    }
+}
 
         stage('OWASP Dependency Check') {
             steps {
@@ -62,11 +62,29 @@ pipeline {
             }
         }
 
-        stage('Trivy Security Scan') {
+        // stage('Trivy Security Scan') {
+        //     steps {
+        //         sh """
+        //         trivy image --exit-code 1 --severity HIGH,CRITICAL ${BACKEND_IMAGE}:${IMAGE_TAG}
+        //         trivy image --exit-code 1 --severity HIGH,CRITICAL ${FRONTEND_IMAGE}:${IMAGE_TAG}
+        //         """
+        //     }
+        // }
+
+          stage('Trivy Scan') {
             steps {
                 sh """
-                trivy image --exit-code 1 --severity HIGH,CRITICAL ${BACKEND_IMAGE}:${IMAGE_TAG}
-                trivy image --exit-code 1 --severity HIGH,CRITICAL ${FRONTEND_IMAGE}:${IMAGE_TAG}
+                docker run --rm \
+                -v /var/run/docker.sock:/var/run/docker.sock \
+                aquasec/trivy image \
+                --severity HIGH,CRITICAL \
+                ${BACKEND_IMAGE}:${IMAGE_TAG}
+
+                docker run --rm \
+                -v /var/run/docker.sock:/var/run/docker.sock \
+                aquasec/trivy image \
+                --severity HIGH,CRITICAL \
+                ${FRONTEND_IMAGE}:${IMAGE_TAG}
                 """
             }
         }
