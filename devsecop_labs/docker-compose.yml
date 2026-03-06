@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - notes-app
+
+  sonarqube:
+    image: sonarqube:lts
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    networks:
+      - notes-app
+
+  trivy:
+    image: aquasec/trivy
+    container_name: trivy
+    entrypoint: ["sleep","infinity"]
+    networks:
+      - notes-app
+    
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - notes-app
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    networks:
+      - notes-app
+
+
+networks:
+  notes-app:
+    driver: bridge
+
+volumes:
+  jenkins_home:
