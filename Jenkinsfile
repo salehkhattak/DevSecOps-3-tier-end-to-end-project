@@ -19,11 +19,9 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-                agent {
-                docker {
-                image 'node:18'
-                   }
-               }
+            tools {
+                nodejs "node18"
+            }
             steps {
                 dir('backend') {
                     sh 'npm install'
