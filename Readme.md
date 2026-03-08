@@ -1,98 +1,209 @@
-# Deploy everything
-chmod +x deploy.sh
-./deploy.sh
 
-# Or deploy manually
-kubectl apply -f k8s/namespace.yml
-kubectl apply -f k8s/pv.yml
-kubectl apply -f k8s/mysql-k8s/
-kubectl apply -f k8s/backend-k8s/
-kubectl apply -f k8s/frontend-k8s/
-kubectl apply -f k8s/hpa.yml
-kubectl apply -f k8s/ingress.yml
+# 🚀 End-to-End DevSecOps CI/CD Pipeline for a 3-Tier Application
 
-# Check everything
-kubectl get all,pv,pvc,hpa,ingress -n notes-app
+This project demonstrates a production-style DevSecOps pipeline for a containerized 3-tier application.  
+The pipeline automates code quality checks, security scanning, container image creation, Kubernetes deployment, and monitoring.
 
-# If using minikube, enable ingress
-minikube addons enable ingress
+The goal of this project is to simulate a real-world DevSecOps workflow used in modern cloud-native environments.
 
-# Add to hosts file (for local testing)
-echo "$(minikube ip) notes-app.local" | sudo tee -a /etc/hosts
+# 🏗️ Project Architecture Overview:
+┌─────────────────────────────────────────────────────────────────────┐
+│                        GitHub Repository                             │
+│                (3-Tier Notes Application Code)                       │
+└────────────────────────┬────────────────────────────────────────────┘
+                         │ WebHook Trigger
+                         ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Jenkins Pipeline                             │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ Stage 1: Code Checkout                                        │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                          │                                           │
+│                          ▼                                           │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ Stage 2: Code Quality Analysis                                │  │
+│  │ • SonarQube Static Code Analysis                              │  │
+│  │ • OWASP Dependency Check                                      │  │
+│  │ • Code Coverage Reports                                       │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                          │                                           │
+│                          ▼                                           │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ Stage 3: Security Scanning                                    │  │
+│  │ • Trivy Filesystem Scan                                       │  │
+│  │ • Container Vulnerability Scan                                │  │
+│  │ • Secret Detection                                            │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                          │                                           │
+│                          ▼                                           │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ Stage 4: Build & Package                                      │  │
+│  │ • Build Docker Images                                         │  │
+│  │ • Backend Service                                             │  │
+│  │ • Frontend Service                                            │  │
+│  │ • Database Migrations                                         │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                          │                                           │
+│                          ▼                                           │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ Stage 5: Container Security                                   │  │
+│  │ • Trivy Image Scan                                            │  │
+│  │ • Docker Bench Security                                       │  │
+│  │ • Image Signing & Verification                                │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                          │                                           │
+│                          ▼                                           │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ Stage 6: Push to Registry                                     │  │
+│  │ • DockerHub Push                                              │  │
+│  │ • Version Tagging                                             │  │
+│  │ • Latest Tag Update                                           │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                          │                                           │
+│                          ▼                                           │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ Stage 7: Deploy to Kubernetes                                 │  │
+│  │ • Apply Kubernetes Manifests                                  │  │
+│  │ • Rolling Update Strategy                                     │  │
+│  │ • Health Checks                                               │  │
+│  │ • Auto-scaling Configuration                                  │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                          │                                           │
+│                          ▼                                           │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ Stage 8: Post-Deployment Tests                                │  │
+│  │ • Smoke Tests                                                 │  │
+│  │ • Integration Tests                                           │  │
+│  │ • Performance Tests                                           │  │
+│  │ • Security Tests (OWASP ZAP)                                  │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Kubernetes Cluster                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐             │
+│  │   Backend    │  │   Frontend   │  │   MySQL      │             │
+│  │   Pods       │  │   Pods       │  │   Database   │             │
+│  └──────────────┘  └──────────────┘  └──────────────┘             │
+│         │               │                  │                       │
+│         └───────────────┼──────────────────┘                       │
+│                         ▼                                          │
+│  ┌───────────────────────────────────────────────────────────────┐ │
+│  │                    Monitoring Stack                           │ │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │ │
+│  │  │  Prometheus  │◀─│  Grafana     │  │  AlertManager│        │ │
+│  │  │  Metrics     │  │  Dashboards  │  │  Alerts      │        │ │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘        │ │
+│  │         │               │                  │                  │ │
+│  │         └───────────────┼──────────────────┘                  │ │
+│  │                         ▼                                      │ │
+│  │  ┌──────────────┐  ┌──────────────┐                          │ │
+│  │  │  Node        │  │  cAdvisor    │                          │ │
+│  │  │  Exporter    │  │  Container   │                          │ │
+│  │  └──────────────┘  └──────────────┘                          │ │
+│  └───────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
 
-# Access the app
-open http://notes-app.local
+# 📋 Table of Contents
+Prerequisites
 
-suggested plugin to install
-1,Security
+1. Project Structure
 
+2. Infrastructure Setup
+
+3. Jenkins Configuration
+
+4. Pipeline Stages
+
+5. Kubernetes Deployment
+
+6. Monitoring Setup
+
+7. Security Tools Integration
+
+8. Troubleshooting Guide
+
+# Create Docker Network
+
+# Create isolated network for all services
+docker network create devsecops-network --subnet=172.20.0.0/16
+
+# Verify network creation
+docker network ls
+docker network inspect devsecops-network
+
+# ⚙️ Tech Stack
+| Category                | Tools                  |
+| ----------------------- | ---------------------- |
+| Source Control          | GitHub                 |
+| CI/CD                   | Jenkins                |
+| Code Quality            | SonarQube              |
+| Dependency Security     | OWASP Dependency-Check |
+| Container Security      | Trivy                  |
+| Containerization        | Docker                 |
+| Container Registry      | DockerHub              |
+| Container Orchestration | Kubernetes             |
+| Monitoring              | Prometheus             |
+| Visualization           | Grafana                |
+
+# 🧪 Security Scanning
+
+This pipeline implements DevSecOps best practices:
+
+# 🕵️‍♂️ Static Code Analysis
+Using SonarQube to detect:
+Code smells
+Bugs
+Security vulnerabilities
+
+# Dependency Scanning
+Using OWASP Dependency-Check to detect vulnerable dependencies.
+
+# Container Security
+ Using Trivy to scan Docker images before deployment.
+
+
+ # 🔌 Jenkins Plugins
 OWASP Dependency-Check
 SonarQube Scanner
 Warnings NG
-2,Containers
+Container
 Docker Pipeline
 Credentials Binding
-
-3,Core
 Pipeline
 Git
 Blue Ocean
 HTML Publisher
 
 
-# create a docker network
-docker network create notes-app
+# 📊 Monitoring Stack
 
-# jenkins run command
-docker run -d `
-  --name jenkins `
-  --network notes-app `
-  -p 8080:8080 `
-  -p 50000:50000 `
-  -v jenkins_home:/var/jenkins_home `
-  -v /var/run/docker.sock:/var/run/docker.sock `
-  jenkins/jenkins:lts
+The deployed application is monitored using:
 
-  # sonar qube run command
-  docker run -d --name sonarqube `
-  --network notes-app `
-  -p 9000:9000 `
-  sonarqube:lts
+Prometheus for metrics collection
+Grafana for dashboards and visualization
 
+# Metrics include:
+Pod CPU / Memory usage
+Request latency
+Application health
+Kubernetes cluster metrics
 
+CPU threshold: 70%
+Min pods: 2
+Max pods: 10
 
-  # diagram
+# 🎯 Key DevSecOps Features
 
-                  GitHub
-                   │
-                   ▼
-                Jenkins
-                   │
-      ┌────────────┼─────────────┐
-      ▼            ▼             ▼
-  SonarQube     Trivy          dockerhub
-(Code Scan)  (Security Scan) (Artifacts)
-      │
-      ▼
- Docker Image
-      │
-      ▼
- Kubernetes Deployment
-      │
-      ▼
- Prometheus → Grafana Monitoring
+✔ Automated CI/CD pipeline
+✔ Static code analysis
+✔ Dependency vulnerability scanning
+✔ Container image security scanning
+✔ Automated Docker image builds
+✔ Kubernetes deployment automation
+✔ Horizontal auto-scaling
+✔ Monitoring and observability
 
- # pipeline
- GitHub
-  │
-  ▼
-Jenkins
-  │
-  ├── Build Docker Image
-  ├── SonarQube Code Analysis
-  ├── Trivy Security Scan
-  ├── Push Image → DockerHub
-  └── Deploy → Kubernetes
-        │
-        ▼
-   Prometheus + Grafana Monitoring
+# 🚀 Conclusion
+This end-to-end DevSecOps pipeline ensures that security is integrated at every stage of the software development lifecycle, from code commit to production deployment. By leveraging industry-standard tools and best practices, this pipeline provides a robust framework for building, securing, and deploying applications in a modern cloud-native environment.
