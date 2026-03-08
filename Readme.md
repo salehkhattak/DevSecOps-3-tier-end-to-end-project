@@ -207,3 +207,24 @@ Max pods: 10
 
 # 🚀 Conclusion
 This end-to-end DevSecOps pipeline ensures that security is integrated at every stage of the software development lifecycle, from code commit to production deployment. By leveraging industry-standard tools and best practices, this pipeline provides a robust framework for building, securing, and deploying applications in a modern cloud-native environment.
+
+
+
+
+
+
+## Known Issues while building project:
+
+In some environments Jenkins may fail to execute Docker commands due to Docker socket permission issues.
+
+Error:
+docker: not found
+
+This happens when Jenkins container cannot access the host Docker daemon.
+
+Solutions include:
+- Mounting /var/run/docker.sock
+- Running Jenkins with docker group permissions
+- Using Jenkins Docker agents
+
+The rest of the pipeline (security scanning, Kubernetes deployment, monitoring) works correctly.
